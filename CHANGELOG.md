@@ -1,5 +1,21 @@
 # Changelog
 
+## v10
+
+### Added
+- Linux 部署示例：生产 profile、systemd 服务、Nginx HTTPS 静态托管与 `/api`、`/ws` 反向代理、环境变量模板。
+- 请求链、数据流、部署架构及完整部署手册。
+
+### Changed
+- README 补全学习路径、技术栈、目录、数据库、环境变量与生产部署入口。
+
+### Fixed
+- 生产入口只允许 Nginx 访问本机 Java 端口，并关闭公开的 OpenAPI 调试页面。
+- 不存在的资源返回 404，不再被全局异常处理误报为 500。
+
+### Learning Focus
+- 前后端产物、Linux 服务管理、HTTPS、反向代理、健康检查与环境隔离。
+
 ## v9
 
 ### Added

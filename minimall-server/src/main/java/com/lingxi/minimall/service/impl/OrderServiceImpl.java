@@ -56,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
 
     /**
      * 一个事务包住所有写操作。若后续任一步抛出运行时异常，Spring 会回滚已经执行的 SQL。
-     * 这个事务只覆盖数据库；未来接入 MQ 时必须等提交成功后再通知外部系统。
+     * 这个事务只覆盖数据库；MQ 消费者与浏览器通知在数据库提交成功后才接到事件。
      */
     @Override
     @Transactional
@@ -102,7 +102,10 @@ public class OrderServiceImpl implements OrderService {
                 throw new BusinessException(HttpStatus.CONFLICT, "库存不足或商品已下架");
             }
         }
-        // 提交成功后才删缓存；若事务回滚，旧库存仍然正确，不需要让读请求提前回填脏数据。
+        /*
+         * 提交成功后才删缓存。回滚时数据库库存没有变化，如果提前删缓存，
+         * 并发读请求可能把事务中的中间状态重新写入缓存，造成短时间的错误结果。
+         */
         List<Long> changedProductIds = lines.stream().map(OrderItem::getProductId).toList();
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void afterCommit() { changedProductIds.forEach(cache::evict); }

@@ -41,7 +41,7 @@ import tools.jackson.databind.ObjectMapper;
  */
 @Configuration
 @SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, scheme = "bearer", bearerFormat = "JWT")
-@OpenAPIDefinition(info = @Info(title = "MiniMall API", version = "v9"), security = @SecurityRequirement(name = "bearerAuth"))
+@OpenAPIDefinition(info = @Info(title = "MiniMall API", version = "v10"), security = @SecurityRequirement(name = "bearerAuth"))
 public class SecurityConfiguration {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper json, JwtAuthenticationConverter roles) throws Exception {

@@ -1,0 +1,48 @@
+# 把 mall.example.com 换成已解析到服务器的域名，取得证书后再启用本配置。
+server {
+    listen 80;
+    listen [::]:80;
+    server_name mall.example.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name mall.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/mall.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mall.example.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    root /var/www/minimall;
+    index index.html;
+
+    # proxy_pass 不附加路径，/api/products 会原样传给 Spring Boot。
+    location /api/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # 浏览器的 WebSocket 升级需要转发 Upgrade 和 Connection。
+    location /ws/ {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 3600s;
+    }
+
+    # 监控接口只在服务器本机查询，不作为公共网站的一部分。
+    location /actuator/ { return 404; }
+
+    # Vue Router 的 /login、/orders 等页面刷新后仍返回入口 HTML。
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
