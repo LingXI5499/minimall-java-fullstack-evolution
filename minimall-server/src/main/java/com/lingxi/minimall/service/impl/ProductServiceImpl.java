@@ -5,6 +5,10 @@ import com.lingxi.minimall.dto.ProductQueryDTO;
 import com.lingxi.minimall.dto.ProductUpdateDTO;
 import com.lingxi.minimall.entity.Product;
 import com.lingxi.minimall.mapper.ProductMapper;
+import com.lingxi.minimall.exception.BusinessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import com.lingxi.minimall.service.ProductService;
 import com.lingxi.minimall.vo.PageResult;
 import org.springframework.stereotype.Service;
@@ -13,6 +17,7 @@ import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService {
+    private static final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
     private final ProductMapper productMapper;
 
     public ProductServiceImpl(ProductMapper productMapper){
@@ -21,7 +26,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Product getById(Long id){
-        return productMapper.selectById(id);
+        Product product = productMapper.selectById(id);
+        if (product == null) throw new BusinessException(HttpStatus.NOT_FOUND, "商品不存在");
+        return product;
     }
 
     @Override
@@ -34,6 +41,7 @@ public class ProductServiceImpl implements ProductService {
         product.setStock(productCreateDTO.getStock());
 
         productMapper.insert(product);
+        log.info("Created product id={}", product.getId());
 
         return product;
     }
@@ -50,7 +58,8 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(productUpdateDTO.getPrice());
         product.setStock(productUpdateDTO.getStock());
 
-        productMapper.update(product);
+        if (productMapper.update(product) == 0) throw new BusinessException(HttpStatus.NOT_FOUND, "商品不存在");
+        log.info("Updated product id={}", id);
 
         return productMapper.selectById(id);
     }
@@ -58,7 +67,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public int deleteById(Long id) {
 
-        return productMapper.deleteById(id);
+        int rows = productMapper.deleteById(id);
+        if (rows == 0) throw new BusinessException(HttpStatus.NOT_FOUND, "商品不存在");
+        log.info("Deleted product id={}", id);
+        return rows;
     }
 
     @Override
@@ -69,6 +81,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PageResult<Product> pageQuery(
             ProductQueryDTO queryDTO) {
+        if (queryDTO.getMinPrice() != null && queryDTO.getMaxPrice() != null
+                && queryDTO.getMinPrice().compareTo(queryDTO.getMaxPrice()) > 0) {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "最低价格不能大于最高价格");
+        }
 
         Integer page = queryDTO.getPage();
         Integer pageSize = queryDTO.getPageSize();

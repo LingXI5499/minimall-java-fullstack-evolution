@@ -1,5 +1,19 @@
 # Changelog
 
+## v3
+
+### Added
+- 统一 `Result<T>`、Bean Validation、业务异常与全局处理、SLF4J 业务日志。
+
+### Changed
+- 前端 API 请求拆到 `src/api`，商品页面移至 `src/views`。
+
+### Fixed
+- 不存在的商品返回 404，输入错误返回 400，前端显示后端错误消息。
+
+### Learning Focus
+- HTTP 状态语义、DTO 校验、异常边界、日志层级与 API 契约。
+
 ## v2
 
 ### Added
