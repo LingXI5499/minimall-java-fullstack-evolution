@@ -1,6 +1,7 @@
 package com.lingxi.minimall.mapper;
 
 import com.lingxi.minimall.entity.OrderItem;
+import com.lingxi.minimall.vo.OrderLineVO;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -8,5 +9,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface OrderItemMapper {
     int insert(OrderItem item);
-    List<OrderItem> selectByOrderId(Long orderId);
+    List<OrderLineVO> selectDetailByOrderId(Long orderId);
 }

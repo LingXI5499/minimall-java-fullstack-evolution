@@ -1,6 +1,13 @@
 CREATE DATABASE IF NOT EXISTS minimall CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE minimall;
 
+-- 分类名称唯一，给商品提供可选的归属。
+CREATE TABLE IF NOT EXISTS category (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(80) NOT NULL,
+  UNIQUE KEY uk_category_name (name)
+) ENGINE=InnoDB;
+
 -- 商品是 V1 的基础表；金额用 DECIMAL，避免浮点误差。
 CREATE TABLE IF NOT EXISTS product (
   id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,

@@ -49,7 +49,7 @@ onMounted(load)
         <tbody><tr v-for="order in orders" :key="order.id"><td>#{{ order.id }}</td><td>{{ order.status }}</td><td>¥{{ order.totalAmount }}</td><td>{{ order.createTime }}</td><td><button @click="show(order.id)">查看明细</button></td></tr></tbody></table>
     </section>
     <section v-if="detail"><h2>订单 #{{ detail.order.id }}</h2><p>状态：{{ detail.order.status }} · 总金额：¥{{ detail.order.totalAmount }}</p>
-      <ul><li v-for="item in detail.items" :key="item.id">{{ item.productName }} × {{ item.quantity }} · ¥{{ item.subtotal }}</li></ul></section>
+      <ul><li v-for="item in detail.items" :key="item.id">{{ item.productName }} × {{ item.quantity }} · ¥{{ item.subtotal }} · 分类：{{ item.categoryName || '未分类' }}</li></ul></section>
   </main>
 </template>
 

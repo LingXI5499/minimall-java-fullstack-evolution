@@ -15,6 +15,7 @@ public class ProductUpdateDTO {
     private BigDecimal price;
     @NotNull(message = "库存不能为空") @Min(value = 0, message = "库存不能为负")
     private Integer stock;
+    private Long categoryId;
 
     public ProductUpdateDTO() {
     }
@@ -42,4 +43,6 @@ public class ProductUpdateDTO {
     public void setStock(Integer stock) {
         this.stock = stock;
     }
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 }

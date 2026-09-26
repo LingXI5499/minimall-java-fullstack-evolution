@@ -5,6 +5,7 @@ import com.lingxi.minimall.dto.ProductQueryDTO;
 import com.lingxi.minimall.dto.ProductUpdateDTO;
 import com.lingxi.minimall.entity.Product;
 import com.lingxi.minimall.mapper.ProductMapper;
+import com.lingxi.minimall.mapper.CategoryMapper;
 import com.lingxi.minimall.exception.BusinessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +21,11 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
     private static final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
     private final ProductMapper productMapper;
+    private final CategoryMapper categoryMapper;
 
-    public ProductServiceImpl(ProductMapper productMapper){
+    public ProductServiceImpl(ProductMapper productMapper, CategoryMapper categoryMapper){
         this.productMapper=productMapper;
+        this.categoryMapper=categoryMapper;
     }
 
     @Override
@@ -40,6 +43,8 @@ public class ProductServiceImpl implements ProductService {
         product.setName(productCreateDTO.getName());
         product.setPrice(productCreateDTO.getPrice());
         product.setStock(productCreateDTO.getStock());
+        requireCategory(productCreateDTO.getCategoryId());
+        product.setCategoryId(productCreateDTO.getCategoryId());
 
         productMapper.insert(product);
         log.info("Created product id={}", product.getId());
@@ -58,6 +63,8 @@ public class ProductServiceImpl implements ProductService {
         product.setName(productUpdateDTO.getName());
         product.setPrice(productUpdateDTO.getPrice());
         product.setStock(productUpdateDTO.getStock());
+        requireCategory(productUpdateDTO.getCategoryId());
+        product.setCategoryId(productUpdateDTO.getCategoryId());
 
         if (productMapper.update(product) == 0) throw new BusinessException(HttpStatus.NOT_FOUND, "商品不存在");
         log.info("Updated product id={}", id);
@@ -119,5 +126,11 @@ public class ProductServiceImpl implements ProductService {
                 pageSize,
                 records
         );
+    }
+
+    private void requireCategory(Long id) {
+        if (id != null && categoryMapper.selectById(id) == null) {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "分类不存在");
+        }
     }
 }

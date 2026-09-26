@@ -83,8 +83,11 @@ public class OrderServiceImpl implements OrderService {
         }
         // 教学开关只在显式启用时可用：此时订单与明细已写入，但异常会让两者一起回滚。
         if (request.simulateFailure()) throw new IllegalStateException("教学回滚：明细已插入，库存扣减前抛异常");
-        for (OrderItem item : lines) {
-            products.decreaseStock(item.getProductId(), item.getQuantity());
+        // 多商品订单按 ID 固定扣减顺序，减少并发事务互相等待形成死锁的机会。
+        for (OrderItem item : lines.stream().sorted((a, b) -> a.getProductId().compareTo(b.getProductId())).toList()) {
+            if (products.decreaseStock(item.getProductId(), item.getQuantity()) != 1) {
+                throw new BusinessException(HttpStatus.CONFLICT, "库存不足或商品已下架");
+            }
         }
         log.info("Created order id={} items={} total={}", order.getId(), lines.size(), total);
         return detail(order.getId());
@@ -99,6 +102,6 @@ public class OrderServiceImpl implements OrderService {
     public OrderDetailVO detail(Long id) {
         Order order = orders.selectById(id);
         if (order == null) throw new BusinessException(HttpStatus.NOT_FOUND, "订单不存在");
-        return new OrderDetailVO(order, items.selectByOrderId(id));
+        return new OrderDetailVO(order, items.selectDetailByOrderId(id));
     }
 }

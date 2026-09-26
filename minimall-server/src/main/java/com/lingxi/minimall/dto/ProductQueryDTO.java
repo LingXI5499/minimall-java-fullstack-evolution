@@ -19,6 +19,7 @@ public class ProductQueryDTO {
     private String name;
 
     private Integer status;
+    private Long categoryId;
 
     @DecimalMin(value = "0.0", message = "最低价格不能为负")
     private BigDecimal minPrice;
@@ -59,6 +60,8 @@ public class ProductQueryDTO {
     public void setStatus(Integer status) {
         this.status = status;
     }
+    public Long getCategoryId() { return categoryId; }
+    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 
     public BigDecimal getMinPrice() {
         return minPrice;

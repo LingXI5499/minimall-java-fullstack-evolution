@@ -1,12 +1,14 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { productApi } from '../api/product'
+import { categoryApi } from '../api/category'
 
 // ====================
 // 商品列表
 // ====================
 
 const products = ref([])
+const categories = ref([])
 
 // ====================
 // 分页状态
@@ -29,6 +31,7 @@ function changePageSize() {
 const filters = reactive({
   name: '',
   status: '',
+  categoryId: '',
   minPrice: '',
   maxPrice: ''
 })
@@ -49,7 +52,8 @@ const editingId = ref(null)
 const form = reactive({
   name: '',
   price: '',
-  stock: ''
+  stock: '',
+  categoryId: ''
 })
 
 // ====================
@@ -80,6 +84,9 @@ async function loadProducts() {
 
     if (filters.status !== '') {
       params.status = filters.status
+    }
+    if (filters.categoryId !== '') {
+      params.categoryId = filters.categoryId
     }
 
     if (filters.minPrice !== '') {
@@ -133,6 +140,7 @@ function resetFilters() {
 
   filters.name = ''
   filters.status = ''
+  filters.categoryId = ''
   filters.minPrice = ''
   filters.maxPrice = ''
 
@@ -266,7 +274,8 @@ async function saveProduct() {
     // 输入控件给出的价格和库存是字符串，发 JSON 前转成数值。
     name: form.name,
     price: Number(form.price),
-    stock: Number(form.stock)
+    stock: Number(form.stock),
+    categoryId: form.categoryId === '' ? null : Number(form.categoryId)
   }
 
   try {
@@ -308,6 +317,7 @@ function editProduct(product) {
   form.name = product.name
   form.price = product.price
   form.stock = product.stock
+  form.categoryId = product.categoryId ?? ''
 
   showMessage(
     `正在编辑商品 ID=${product.id}`,
@@ -382,6 +392,7 @@ function resetForm() {
   form.name = ''
   form.price = ''
   form.stock = ''
+  form.categoryId = ''
 
   editingId.value = null
 }
@@ -418,6 +429,7 @@ function formatPrice(price) {
 
 onMounted(() => {
   loadProducts()
+  categoryApi.list().then(response => { categories.value = response.data }).catch(error => showMessage(error.message, 'error'))
 })
 </script>
 
@@ -648,6 +660,11 @@ onMounted(() => {
 
         </div>
 
+        <div class="field">
+          <label>分类</label>
+          <select v-model="form.categoryId"><option value="">未分类</option><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select>
+        </div>
+
 
         <div class="form-actions">
 
@@ -740,6 +757,11 @@ onMounted(() => {
 
           </select>
 
+        </div>
+
+        <div class="filter-item">
+          <label>分类</label>
+          <select v-model="filters.categoryId"><option value="">全部</option><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select>
         </div>
 
 

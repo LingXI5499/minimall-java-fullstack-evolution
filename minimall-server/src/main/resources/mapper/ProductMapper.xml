@@ -32,11 +32,13 @@
 
         INSERT INTO product (
         name,
+        category_id,
         price,
         stock
         )
         VALUES (
         #{name},
+        #{categoryId},
         #{price},
         #{stock}
         )
@@ -49,6 +51,7 @@
         UPDATE product
         SET
         name = #{name},
+        category_id = #{categoryId},
         price = #{price},
         stock = #{stock}
         WHERE id = #{id}
@@ -97,6 +100,10 @@
                 AND status = #{status}
             </if>
 
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+
             <if test="minPrice != null">
                 AND price &gt;= #{minPrice}
             </if>
@@ -135,6 +142,10 @@
                 AND status = #{status}
             </if>
 
+            <if test="categoryId != null">
+                AND category_id = #{categoryId}
+            </if>
+
             <if test="minPrice != null">
                 AND price &gt;= #{minPrice}
             </if>
@@ -152,8 +163,9 @@
 
     </select>
 
-    <!-- V4 故意保留读后更新的并发问题；V5 会给 WHERE 增加库存条件。 -->
+    <!-- 单条 UPDATE 在数据库行锁下完成检查和扣减；受影响行数为 0 就是库存不足或已下架。 -->
     <update id="decreaseStock">
-        UPDATE product SET stock = stock - #{quantity} WHERE id = #{id}
+        UPDATE product SET stock = stock - #{quantity}
+        WHERE id = #{id} AND stock &gt;= #{quantity} AND status = 1
     </update>
 </mapper>

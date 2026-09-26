@@ -1,5 +1,19 @@
 # Changelog
 
+## v5
+
+### Added
+- 分类表与接口、订单明细 JOIN 视图、外键和查询索引、EXPLAIN 示例。
+
+### Changed
+- 库存扣减变为数据库单条条件 UPDATE，并检查受影响行数。
+
+### Fixed
+- 并发下两个请求不能同时扣掉同一件库存。
+
+### Learning Focus
+- 关系、索引、行锁、MVCC、原子更新与隔离级别。
+
 ## v4
 
 ### Added
