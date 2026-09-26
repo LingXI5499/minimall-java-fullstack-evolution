@@ -1,5 +1,6 @@
 package com.lingxi.minimall.mapper;
 
+import com.lingxi.minimall.dto.ProductQueryDTO;
 import com.lingxi.minimall.entity.Product;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -16,4 +17,8 @@ public interface ProductMapper {
     int deleteById(Long id);
 
     List<Product> selectAll();
+
+    long countByCondition(ProductQueryDTO queryDTO);
+
+    List<Product> selectPageByCondition(ProductQueryDTO queryDTO);
 }

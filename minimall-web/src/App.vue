@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import axios from 'axios'
 
 // ====================
@@ -7,6 +7,30 @@ import axios from 'axios'
 // ====================
 
 const products = ref([])
+
+// ====================
+// 分页状态
+// ====================
+
+const total = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(5)
+
+function changePageSize() {
+  currentPage.value = 1
+  loadProducts()
+}
+
+// ====================
+// 查询条件
+// ====================
+
+const filters = reactive({
+  name: '',
+  status: '',
+  minPrice: '',
+  maxPrice: ''
+})
 
 // ====================
 // 根据 ID 查询
@@ -36,19 +60,133 @@ const messageType = ref('success')
 
 
 // ====================
-// 查询全部商品
+// 查询商品列表（分页 + 条件）
 // ====================
 
 async function loadProducts() {
-  try {
-    const response = await axios.get('/api/products')
 
-    products.value = response.data
+  try {
+
+    const params = {
+      page: currentPage.value,
+      pageSize: pageSize.value
+    }
+
+    if (filters.name) {
+      params.name = filters.name
+    }
+
+    if (filters.status !== '') {
+      params.status = filters.status
+    }
+
+    if (filters.minPrice !== '') {
+      params.minPrice = filters.minPrice
+    }
+
+    if (filters.maxPrice !== '') {
+      params.maxPrice = filters.maxPrice
+    }
+
+    const response = await axios.get(
+      '/api/products',
+      {
+        params
+      }
+    )
+
+    products.value =
+        response.data.records
+
+    total.value =
+        response.data.total
+
+    currentPage.value =
+        response.data.page
+
+    pageSize.value =
+        response.data.pageSize
+
   } catch (error) {
+
     console.error(error)
 
-    showMessage('加载商品列表失败', 'error')
+    showMessage(
+      '加载商品列表失败',
+      'error'
+    )
   }
+}
+
+
+// ====================
+// 查询 / 重置
+// ====================
+
+function searchProducts() {
+
+  currentPage.value = 1
+
+  loadProducts()
+}
+
+
+function resetFilters() {
+
+  filters.name = ''
+  filters.status = ''
+  filters.minPrice = ''
+  filters.maxPrice = ''
+
+  currentPage.value = 1
+
+  loadProducts()
+}
+
+
+// ====================
+// 计算总页数
+// ====================
+
+const totalPages = computed(() => {
+
+  if (total.value === 0) {
+    return 1
+  }
+
+  return Math.ceil(
+    total.value / pageSize.value
+  )
+})
+
+
+// ====================
+// 上一页 / 下一页
+// ====================
+
+function previousPage() {
+
+  if (currentPage.value <= 1) {
+    return
+  }
+
+  currentPage.value--
+
+  loadProducts()
+}
+
+
+function nextPage() {
+
+  if (
+    currentPage.value >= totalPages.value
+  ) {
+    return
+  }
+
+  currentPage.value++
+
+  loadProducts()
 }
 
 
@@ -572,8 +710,93 @@ onMounted(() => {
 
 
         <span class="count">
-          共 {{ products.length }} 条
+          共 {{ total }} 条
         </span>
+
+      </div>
+
+
+      <div class="filters">
+
+        <div class="filter-item">
+
+          <label>商品名称</label>
+
+          <input
+            v-model="filters.name"
+            type="text"
+            placeholder="模糊搜索商品名称"
+          />
+
+        </div>
+
+
+        <div class="filter-item">
+
+          <label>状态</label>
+
+          <select v-model="filters.status">
+
+            <option value="">
+              全部
+            </option>
+
+            <option value="1">
+              启用
+            </option>
+
+            <option value="0">
+              停用
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="filter-item">
+
+          <label>最低价格</label>
+
+          <input
+            v-model="filters.minPrice"
+            type="number"
+            step="0.01"
+          />
+
+        </div>
+
+
+        <div class="filter-item">
+
+          <label>最高价格</label>
+
+          <input
+            v-model="filters.maxPrice"
+            type="number"
+            step="0.01"
+          />
+
+        </div>
+
+
+        <div class="filter-actions">
+
+          <button
+            class="primary-button"
+            @click="searchProducts"
+          >
+            查询
+          </button>
+
+          <button
+            class="secondary-button"
+            @click="resetFilters"
+          >
+            重置
+          </button>
+
+        </div>
 
       </div>
 
@@ -680,6 +903,53 @@ onMounted(() => {
           </tbody>
 
         </table>
+
+      </div>
+
+
+      <div class="pagination">
+
+        <div>
+          共 {{ total }} 条数据
+        </div>
+
+
+        <div class="pagination-controls">
+
+          <label for="page-size">每页</label>
+          <select id="page-size" v-model.number="pageSize" @change="changePageSize">
+            <option v-for="size in [5, 10, 20, 50]" :key="size" :value="size">{{ size }} 条</option>
+          </select>
+
+          <button
+            class="secondary-button"
+            :disabled="currentPage <= 1"
+            @click="previousPage"
+          >
+            上一页
+          </button>
+
+
+          <span>
+            第
+            {{ currentPage }}
+            /
+            {{ totalPages }}
+            页
+          </span>
+
+
+          <button
+            class="secondary-button"
+            :disabled="
+              currentPage >= totalPages
+            "
+            @click="nextPage"
+          >
+            下一页
+          </button>
+
+        </div>
 
       </div>
 
@@ -1039,6 +1309,73 @@ tbody tr:hover {
 
 
 /* =========================
+   查询栏
+========================= */
+
+.filters {
+  display: grid;
+  grid-template-columns:
+    2fr 1fr 1fr 1fr auto;
+  gap: 14px;
+  align-items: end;
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.filter-item label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555f70;
+}
+
+.filter-item input,
+.filter-item select {
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #d8dce4;
+  border-radius: 7px;
+  background: white;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+
+/* =========================
+   分页
+========================= */
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 22px;
+  color: #6f7888;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+
+/* =========================
    小屏幕
 ========================= */
 
@@ -1052,6 +1389,14 @@ tbody tr:hover {
     flex-direction: column;
     align-items: flex-start;
     gap: 18px;
+  }
+
+}
+
+@media (max-width: 900px) {
+
+  .filters {
+    grid-template-columns: 1fr 1fr;
   }
 
 }

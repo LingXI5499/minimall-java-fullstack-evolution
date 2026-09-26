@@ -6,8 +6,9 @@
 |---|---|---|
 | v0 | Spring Boot 请求链 | `git checkout v0` |
 | v1 | 商品 CRUD 与 MyBatis | `git checkout v1` |
+| v2 | 分页、模糊查询与动态 SQL | `git checkout v2` |
 
-当前阶段：v1。后续阶段见 [路线图](docs/roadmap.md)。
+当前阶段：v2。后续阶段见 [路线图](docs/roadmap.md)。
 
 ## 快速运行
 
@@ -15,4 +16,4 @@
 
 ## 验证
 
-`mvn test && mvn package`；`npm ci && npm run build`。页面可完成商品新增、列表、按 ID 查询、修改和删除。V0 Echo 接口仍可用于回顾请求链。
+`mvn test && mvn package`；`npm ci && npm run build`。页面可完成商品 CRUD、名称/状态/价格组合查询、翻页与每页条数切换。V0 Echo 接口仍可用于回顾请求链。

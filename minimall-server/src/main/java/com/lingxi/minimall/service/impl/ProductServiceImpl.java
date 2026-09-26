@@ -1,10 +1,12 @@
 package com.lingxi.minimall.service.impl;
 
 import com.lingxi.minimall.dto.ProductCreateDTO;
+import com.lingxi.minimall.dto.ProductQueryDTO;
 import com.lingxi.minimall.dto.ProductUpdateDTO;
 import com.lingxi.minimall.entity.Product;
 import com.lingxi.minimall.mapper.ProductMapper;
 import com.lingxi.minimall.service.ProductService;
+import com.lingxi.minimall.vo.PageResult;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -62,5 +64,41 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> list() {
         return productMapper.selectAll();
+    }
+
+    @Override
+    public PageResult<Product> pageQuery(
+            ProductQueryDTO queryDTO) {
+
+        Integer page = queryDTO.getPage();
+        Integer pageSize = queryDTO.getPageSize();
+
+        if (page == null || page < 1) {
+            page = 1;
+        }
+
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 5;
+        }
+
+        int offset =
+                (page - 1) * pageSize;
+
+        queryDTO.setPage(page);
+        queryDTO.setPageSize(pageSize);
+        queryDTO.setOffset(offset);
+
+        long total =
+                productMapper.countByCondition(queryDTO);
+
+        List<Product> records =
+                productMapper.selectPageByCondition(queryDTO);
+
+        return new PageResult<>(
+                total,
+                page,
+                pageSize,
+                records
+        );
     }
 }

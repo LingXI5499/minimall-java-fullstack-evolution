@@ -1,12 +1,12 @@
 package com.lingxi.minimall.controller;
 
 import com.lingxi.minimall.dto.ProductCreateDTO;
+import com.lingxi.minimall.dto.ProductQueryDTO;
 import com.lingxi.minimall.dto.ProductUpdateDTO;
 import com.lingxi.minimall.entity.Product;
 import com.lingxi.minimall.service.ProductService;
+import com.lingxi.minimall.vo.PageResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/products")
@@ -47,7 +47,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> list() {
-        return productService.list();
+    public PageResult<Product> pageQuery(
+            ProductQueryDTO queryDTO) {
+
+        return productService.pageQuery(queryDTO);
     }
 }

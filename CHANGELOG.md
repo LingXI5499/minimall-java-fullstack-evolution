@@ -1,5 +1,19 @@
 # Changelog
 
+## v2
+
+### Added
+- `ProductQueryDTO`、`PageResult`、MyBatis 动态 SQL、分页和组合查询、每页条数选择器。
+
+### Changed
+- 商品列表由全量返回变为分页结果。
+
+### Fixed
+- 切换每页条数时回到第一页并重新查询。
+
+### Learning Focus
+- `COUNT(*)`、`LIKE`、`LIMIT`、`OFFSET`、`<where>`、`<if>`。
+
 ## v1
 
 ### Added
