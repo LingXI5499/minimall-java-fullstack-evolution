@@ -1,0 +1,25 @@
+# Java and IDE
+**/target/
+**/.idea/
+*.iml
+.vscode/
+
+# Node
+**/node_modules/
+**/dist/
+
+# Local configuration and runtime
+.env
+.env.*
+!*.example
+**/application-local.properties
+**/application-secret.properties
+*.log
+.DS_Store
+Thumbs.db
+.workbuddy/
+tmp/
+
+# Provided source archives stay local
+*.zip
+.source-v*/
