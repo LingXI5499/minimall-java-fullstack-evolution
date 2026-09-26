@@ -12,6 +12,7 @@ public interface OrderMapper {
     int insert(Order order);
     Order selectById(Long id);
     List<Order> selectAll();
+    List<Order> selectAllByOwner(String ownerUsername);
     List<Order> selectExpired(@Param("cutoff") LocalDateTime cutoff);
     int closePending(Long id);
 }

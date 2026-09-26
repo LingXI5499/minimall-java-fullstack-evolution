@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -85,6 +87,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setTotalAmount(total);
         order.setStatus("PENDING");
+        order.setOwnerUsername(currentUser().getName());
         orders.insert(order);
         // 先写订单头取得自增 ID，明细用这个 ID 建立关联。
         for (OrderItem item : lines) {
@@ -112,13 +115,30 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Order> list() { return orders.selectAll(); }
+    public List<Order> list() {
+        Authentication user = currentUser();
+        return isAdmin(user) ? orders.selectAll() : orders.selectAllByOwner(user.getName());
+    }
 
     @Override
     @Transactional(readOnly = true)
     public OrderDetailVO detail(Long id) {
         Order order = orders.selectById(id);
         if (order == null) throw new BusinessException(HttpStatus.NOT_FOUND, "订单不存在");
+        Authentication user = currentUser();
+        if (!isAdmin(user) && !user.getName().equals(order.getOwnerUsername())) {
+            throw new BusinessException(HttpStatus.FORBIDDEN, "不能查看别人的订单");
+        }
         return new OrderDetailVO(order, items.selectDetailByOrderId(id));
+    }
+
+    private Authentication currentUser() {
+        Authentication user = SecurityContextHolder.getContext().getAuthentication();
+        if (user == null || !user.isAuthenticated()) throw new BusinessException(HttpStatus.UNAUTHORIZED, "请先登录");
+        return user;
+    }
+
+    private boolean isAdmin(Authentication user) {
+        return user.getAuthorities().stream().anyMatch(role -> "ROLE_ADMIN".equals(role.getAuthority()));
     }
 }

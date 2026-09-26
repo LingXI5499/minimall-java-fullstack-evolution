@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { productApi } from '../api/product'
 import { categoryApi } from '../api/category'
+import { session } from '../auth/session'
 
 // ====================
 // 商品列表
@@ -9,6 +10,7 @@ import { categoryApi } from '../api/category'
 
 const products = ref([])
 const categories = ref([])
+const isAdmin = computed(() => session.role === 'ADMIN')
 
 // ====================
 // 分页状态
@@ -562,6 +564,7 @@ onMounted(() => {
           </span>
 
           <button
+            v-if="isAdmin"
             class="secondary-button"
             @click="editQueryResult"
           >
@@ -579,7 +582,7 @@ onMounted(() => {
     <!-- 新增 / 修改 -->
     <!-- ============================= -->
 
-    <section class="card">
+    <section v-if="isAdmin" class="card">
 
       <div class="card-title">
 
@@ -825,7 +828,7 @@ onMounted(() => {
               <th>库存</th>
               <th>状态</th>
               <th>更新时间</th>
-              <th>操作</th>
+              <th v-if="isAdmin">操作</th>
             </tr>
 
           </thead>
@@ -875,7 +878,7 @@ onMounted(() => {
                 {{ product.updateTime || '-' }}
               </td>
 
-              <td>
+              <td v-if="isAdmin">
 
                 <div class="table-actions">
 
@@ -903,7 +906,7 @@ onMounted(() => {
             <tr v-if="products.length === 0">
 
               <td
-                colspan="7"
+                :colspan="isAdmin ? 7 : 6"
                 class="empty"
               >
                 暂无商品数据

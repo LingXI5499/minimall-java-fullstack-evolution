@@ -1,5 +1,20 @@
 # Changelog
 
+## v9
+
+### Added
+- JWT 登录、Spring Security FilterChain、ADMIN/USER 权限、订单归属校验与 WebSocket 一次性票据。
+- 商品操作 AOP 日志、OpenAPI、Actuator、服务/Mapper/事务/Controller/安全测试、GitHub Actions。
+
+### Changed
+- 前端加入登录页面和会话处理，普通用户只看到自己的订单。
+
+### Fixed
+- 管理员 WebSocket 通知不再对未授权连接开放。
+
+### Learning Focus
+- 认证、授权、过滤链、JWT、AOP、测试分层与 CI。
+
 ## v8
 
 ### Added

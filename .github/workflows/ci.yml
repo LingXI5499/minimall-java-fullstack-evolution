@@ -1,0 +1,72 @@
+name: MiniMall CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpass
+          MYSQL_DATABASE: minimall
+        ports: ["3306:3306"]
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ptestpass"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+    env:
+      DB_URL: jdbc:mysql://127.0.0.1:3306/minimall?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+      DB_USERNAME: root
+      DB_PASSWORD: testpass
+      RUN_DB_TESTS: "true"
+      MQ_HOST: localhost
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Initialize MySQL schema
+        env:
+          MYSQL_PWD: testpass
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mysql-client
+          mysql -h 127.0.0.1 -u root < database/schema.sql
+          mysql -h 127.0.0.1 -u root < database/migrations/v5.sql
+          mysql -h 127.0.0.1 -u root < database/migrations/v7.sql
+          mysql -h 127.0.0.1 -u root < database/migrations/v9.sql
+      - name: Test backend
+        working-directory: minimall-server
+        run: mvn -B test
+      - name: Package backend
+        working-directory: minimall-server
+        run: mvn -B package -DskipTests
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: minimall-web/package-lock.json
+      - name: Install frontend
+        working-directory: minimall-web
+        run: npm ci
+      - name: Build frontend
+        working-directory: minimall-web
+        run: npm run build

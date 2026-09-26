@@ -4,4 +4,6 @@
 
 V7 起再执行 `migrations/v7.sql`，给 RabbitMQ 消费者准备通知去重表。
 
+V9 起再执行 `migrations/v9.sql`，增加订单归属用户字段。之前的订单 owner 为空，只对管理员可见。
+
 后端通过 `DB_URL`、`DB_USERNAME`、`DB_PASSWORD` 读取连接参数；不要将真实密码提交到仓库。

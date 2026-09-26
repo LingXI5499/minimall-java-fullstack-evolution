@@ -8,6 +8,7 @@ public class Order {
     private Long id;
     private BigDecimal totalAmount;
     private String status;
+    private String ownerUsername;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     public Long getId() { return id; }
@@ -16,6 +17,8 @@ public class Order {
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getOwnerUsername() { return ownerUsername; }
+    public void setOwnerUsername(String ownerUsername) { this.ownerUsername = ownerUsername; }
     public LocalDateTime getCreateTime() { return createTime; }
     public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
     public LocalDateTime getUpdateTime() { return updateTime; }

@@ -1,6 +1,8 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 import { orderApi } from '../api/order'
+import { authApi } from '../api/auth'
+import { session } from '../auth/session'
 
 const orders = ref([])
 const detail = ref(null)
@@ -14,10 +16,14 @@ let socket
 let retryTimer
 let active = true
 
-function connect() {
+async function connect() {
   if (!active) return
+  if (session.role !== 'ADMIN') { connection.value = '仅管理员实时订阅'; return }
+  let ticket
+  try { ticket = (await authApi.wsTicket()).data.ticket }
+  catch (e) { connection.value = e.message; retryTimer = setTimeout(connect, 3000); return }
   const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:'
-  socket = new WebSocket(`${scheme}//${location.host}/ws/orders`)
+  socket = new WebSocket(`${scheme}//${location.host}/ws/orders?ticket=${encodeURIComponent(ticket)}`)
   socket.onopen = () => { connection.value = '已连接' }
   socket.onmessage = async event => {
     const notice = JSON.parse(event.data)

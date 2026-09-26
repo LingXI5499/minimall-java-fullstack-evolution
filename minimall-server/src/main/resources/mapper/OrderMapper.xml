@@ -3,17 +3,21 @@
 <mapper namespace="com.lingxi.minimall.mapper.OrderMapper">
   <!-- 自增主键回填到 Order.id，供同一事务后续写入 order_item。 -->
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-    INSERT INTO orders (total_amount, status) VALUES (#{totalAmount}, #{status})
+    INSERT INTO orders (total_amount, status, owner_username) VALUES (#{totalAmount}, #{status}, #{ownerUsername})
   </insert>
   <select id="selectById" resultType="com.lingxi.minimall.entity.Order">
-    SELECT id, total_amount, status, create_time, update_time FROM orders WHERE id = #{id}
+    SELECT id, total_amount, status, owner_username, create_time, update_time FROM orders WHERE id = #{id}
   </select>
   <select id="selectAll" resultType="com.lingxi.minimall.entity.Order">
-    SELECT id, total_amount, status, create_time, update_time FROM orders ORDER BY id DESC LIMIT 100
+    SELECT id, total_amount, status, owner_username, create_time, update_time FROM orders ORDER BY id DESC LIMIT 100
+  </select>
+  <select id="selectAllByOwner" resultType="com.lingxi.minimall.entity.Order">
+    SELECT id, total_amount, status, owner_username, create_time, update_time
+    FROM orders WHERE owner_username = #{ownerUsername} ORDER BY id DESC LIMIT 100
   </select>
   <!-- SKIP LOCKED 让多个定时任务实例不会同时处理同一订单。 -->
   <select id="selectExpired" resultType="com.lingxi.minimall.entity.Order">
-    SELECT id, total_amount, status, create_time, update_time FROM orders
+    SELECT id, total_amount, status, owner_username, create_time, update_time FROM orders
     WHERE status = 'PENDING' AND create_time &lt; #{cutoff}
     ORDER BY create_time LIMIT 100 FOR UPDATE SKIP LOCKED
   </select>

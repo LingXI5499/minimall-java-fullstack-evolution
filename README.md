@@ -13,12 +13,13 @@
 | v6 | Redis 缓存 | `git checkout v6` |
 | v7 | RabbitMQ 异步消息 | `git checkout v7` |
 | v8 | WebSocket 与定时任务 | `git checkout v8` |
+| v9 | Security、测试、文档、监控与 CI | `git checkout v9` |
 
-当前阶段：v8。后续阶段见 [路线图](docs/roadmap.md)。
+当前阶段：v9。后续阶段见 [路线图](docs/roadmap.md)。
 
 ## 快速运行
 
-要求 JDK 21、Maven、Node.js、MySQL 8、Redis、RabbitMQ。新库依次执行 `database/schema.sql`、`database/migrations/v5.sql`、`database/migrations/v7.sql`、`database/seed.sql`；已有数据库只执行尚未运行的迁移。按 [配置说明](docs/configuration.md) 设置环境变量。分别在 `minimall-server` 执行 `mvn spring-boot:run`，在 `minimall-web` 执行 `npm ci && npm run dev`。访问 http://localhost:5173。Vite 会将 `/api` 代理到后端 8080。
+要求 JDK 21、Maven、Node.js、MySQL 8、Redis、RabbitMQ。新库依次执行 `database/schema.sql`、`database/migrations/v5.sql`、`database/migrations/v7.sql`、`database/migrations/v9.sql`、`database/seed.sql`；已有数据库只执行尚未运行的迁移。按 [配置说明](docs/configuration.md) 设置数据库、消息和认证环境变量。分别在 `minimall-server` 执行 `mvn spring-boot:run`，在 `minimall-web` 执行 `npm ci && npm run dev`。访问 http://localhost:5173 并登录。Vite 会将 `/api` 和 `/ws` 代理到后端 8080。
 
 ## 验证
 
