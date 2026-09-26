@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lingxi.minimall.mapper.ProductMapper">
+
+    <select id="selectById"
+            resultType="com.lingxi.minimall.entity.Product">
+
+        SELECT
+        id,
+        name,
+        category_id,
+        price,
+        stock,
+        status,
+        description,
+        create_time,
+        update_time
+        FROM product
+        WHERE id = #{id}
+
+    </select>
+
+    <insert id="insert"
+            parameterType="com.lingxi.minimall.entity.Product"
+            useGeneratedKeys="true"
+            keyProperty="id">
+
+        INSERT INTO product (
+        name,
+        price,
+        stock
+        )
+        VALUES (
+        #{name},
+        #{price},
+        #{stock}
+        )
+
+    </insert>
+
+    <update id="update"
+            parameterType="com.lingxi.minimall.entity.Product">
+
+        UPDATE product
+        SET
+        name = #{name},
+        price = #{price},
+        stock = #{stock}
+        WHERE id = #{id}
+
+    </update>
+
+    <delete id="deleteById">
+
+        DELETE FROM product
+        WHERE id = #{id}
+
+    </delete>
+
+    <select id="selectAll"
+            resultType="com.lingxi.minimall.entity.Product">
+
+        SELECT
+        id,
+        name,
+        category_id,
+        price,
+        stock,
+        status,
+        description,
+        create_time,
+        update_time
+        FROM product
+        ORDER BY id DESC
+
+    </select>
+
+</mapper>
