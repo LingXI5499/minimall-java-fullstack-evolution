@@ -27,4 +27,5 @@ public interface ProductMapper {
 
     List<Product> selectPageByCondition(ProductQueryDTO queryDTO);
     int decreaseStock(@Param("id") Long id, @Param("quantity") Integer quantity);
+    int increaseStock(@Param("id") Long id, @Param("quantity") Integer quantity);
 }

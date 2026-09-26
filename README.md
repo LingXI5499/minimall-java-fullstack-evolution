@@ -12,8 +12,9 @@
 | v5 | 数据关系、索引与库存并发 | `git checkout v5` |
 | v6 | Redis 缓存 | `git checkout v6` |
 | v7 | RabbitMQ 异步消息 | `git checkout v7` |
+| v8 | WebSocket 与定时任务 | `git checkout v8` |
 
-当前阶段：v7。后续阶段见 [路线图](docs/roadmap.md)。
+当前阶段：v8。后续阶段见 [路线图](docs/roadmap.md)。
 
 ## 快速运行
 

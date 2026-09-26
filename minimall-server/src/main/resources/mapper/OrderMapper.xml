@@ -11,4 +11,13 @@
   <select id="selectAll" resultType="com.lingxi.minimall.entity.Order">
     SELECT id, total_amount, status, create_time, update_time FROM orders ORDER BY id DESC LIMIT 100
   </select>
+  <!-- SKIP LOCKED 让多个定时任务实例不会同时处理同一订单。 -->
+  <select id="selectExpired" resultType="com.lingxi.minimall.entity.Order">
+    SELECT id, total_amount, status, create_time, update_time FROM orders
+    WHERE status = 'PENDING' AND create_time &lt; #{cutoff}
+    ORDER BY create_time LIMIT 100 FOR UPDATE SKIP LOCKED
+  </select>
+  <update id="closePending">
+    UPDATE orders SET status = 'CLOSED' WHERE id = #{id} AND status = 'PENDING'
+  </update>
 </mapper>

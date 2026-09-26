@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { orderApi } from '../api/order'
 
 const orders = ref([])
@@ -8,6 +8,31 @@ const productId = ref('')
 const quantity = ref(1)
 const message = ref('')
 const error = ref('')
+const connection = ref('连接中')
+const notices = ref([])
+let socket
+let retryTimer
+let active = true
+
+function connect() {
+  if (!active) return
+  const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:'
+  socket = new WebSocket(`${scheme}//${location.host}/ws/orders`)
+  socket.onopen = () => { connection.value = '已连接' }
+  socket.onmessage = async event => {
+    const notice = JSON.parse(event.data)
+    notices.value.unshift(notice)
+    notices.value = notices.value.slice(0, 10)
+    // 服务端只推事件，不推整份订单；页面再从 HTTP API 读取最新状态。
+    await load()
+    if (detail.value?.order.id === notice.orderId) await show(notice.orderId)
+  }
+  socket.onclose = () => {
+    connection.value = '已断开'
+    if (active) retryTimer = setTimeout(connect, 3000)
+  }
+  socket.onerror = () => { connection.value = '连接失败' }
+}
 
 // 创建成功后重新加载列表，让页面显示数据库实际保存的订单。
 async function load() {
@@ -28,13 +53,15 @@ async function create() {
     await load()
   } catch (e) { error.value = e.message }
 }
-onMounted(load)
+onMounted(() => { load(); connect() })
+onUnmounted(() => { active = false; clearTimeout(retryTimer); socket?.close() })
 </script>
 
 <template>
   <main>
-    <header><h1>订单管理</h1><p>下单事务：订单 → 明细 → 扣减库存</p></header>
+    <header><h1>订单管理</h1><p>下单事务：订单 → 明细 → 扣减库存 · 实时连接：{{ connection }}</p></header>
     <p v-if="message" class="success">{{ message }}</p><p v-if="error" role="alert" class="error">{{ error }}</p>
+    <section v-if="notices.length"><h2>实时通知</h2><ul><li v-for="(notice, index) in notices" :key="index">订单 #{{ notice.orderId }}：{{ notice.type === 'ORDER_CLOSED' ? '超时关闭' : '创建成功' }}</li></ul></section>
     <section>
       <h2>创建订单</h2>
       <form @submit.prevent="create">

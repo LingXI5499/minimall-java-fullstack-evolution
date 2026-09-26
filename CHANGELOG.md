@@ -1,5 +1,20 @@
 # Changelog
 
+## v8
+
+### Added
+- `/ws/orders` 实时订单事件、前端连接状态与通知列表。
+- `@Scheduled` 超时关闭待处理订单并恢复库存。
+
+### Changed
+- WebSocket 推送与缓存失效都在订单事务提交后执行。
+
+### Fixed
+- 超时关闭时不再永久占用待处理订单的库存。
+
+### Learning Focus
+- WebSocket 握手/推送、时间驱动入口、定时任务事务边界。
+
 ## v7
 
 ### Added

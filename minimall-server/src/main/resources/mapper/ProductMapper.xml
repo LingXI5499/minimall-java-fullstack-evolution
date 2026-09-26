@@ -168,4 +168,8 @@
         UPDATE product SET stock = stock - #{quantity}
         WHERE id = #{id} AND stock &gt;= #{quantity} AND status = 1
     </update>
+    <!-- 超时关闭订单时归还库存；若商品已删除，受影响行数为 0 并记录告警。 -->
+    <update id="increaseStock">
+        UPDATE product SET stock = stock + #{quantity} WHERE id = #{id}
+    </update>
 </mapper>
