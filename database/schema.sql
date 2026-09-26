@@ -42,3 +42,12 @@ CREATE TABLE IF NOT EXISTS order_item (
   subtotal DECIMAL(12,2) NOT NULL,
   KEY idx_order_item_order_id (order_id)
 ) ENGINE=InnoDB;
+
+-- 消费者的去重记录：同一个订单通知最多处理一次。
+CREATE TABLE IF NOT EXISTS order_notification (
+  id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  order_id BIGINT NOT NULL,
+  message VARCHAR(255) NOT NULL,
+  processed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_order_notification_order (order_id)
+) ENGINE=InnoDB;

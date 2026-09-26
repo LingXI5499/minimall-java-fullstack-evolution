@@ -10,6 +10,7 @@ import com.lingxi.minimall.exception.BusinessException;
 import com.lingxi.minimall.mapper.OrderItemMapper;
 import com.lingxi.minimall.mapper.OrderMapper;
 import com.lingxi.minimall.mapper.ProductMapper;
+import com.lingxi.minimall.messaging.OrderCreatedEvent;
 import com.lingxi.minimall.service.OrderService;
 import com.lingxi.minimall.vo.OrderDetailVO;
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,14 +38,17 @@ public class OrderServiceImpl implements OrderService {
     private final OrderItemMapper items;
     private final ProductMapper products;
     private final ProductCache cache;
+    private final ApplicationEventPublisher events;
     private final boolean rollbackEnabled;
 
     public OrderServiceImpl(OrderMapper orders, OrderItemMapper items, ProductMapper products, ProductCache cache,
+                            ApplicationEventPublisher events,
                             @Value("${app.demo.rollback-enabled:false}") boolean rollbackEnabled) {
         this.orders = orders;
         this.items = items;
         this.products = products;
         this.cache = cache;
+        this.events = events;
         this.rollbackEnabled = rollbackEnabled;
     }
 
@@ -100,6 +105,8 @@ public class OrderServiceImpl implements OrderService {
             @Override public void afterCommit() { changedProductIds.forEach(cache::evict); }
         });
         log.info("Created order id={} items={} total={}", order.getId(), lines.size(), total);
+        // 这里只发布进程内事件；RabbitMQ Producer 在事务真正提交后才会收到。
+        events.publishEvent(new OrderCreatedEvent(order.getId()));
         return detail(order.getId());
     }
 

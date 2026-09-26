@@ -1,5 +1,20 @@
 # Changelog
 
+## v7
+
+### Added
+- RabbitMQ Exchange、Queue、Binding、死信队列、订单事件生产者与模拟通知消费者。
+- `order_notification` 唯一键去重记录。
+
+### Changed
+- 订单创建在数据库提交后才发布 MQ 消息。
+
+### Fixed
+- 订单回滚时不会提前发送“创建成功”消息。
+
+### Learning Focus
+- Producer、Consumer、ACK、Retry、DLQ、幂等和事务边界。
+
 ## v6
 
 ### Added

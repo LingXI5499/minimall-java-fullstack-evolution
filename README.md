@@ -11,12 +11,13 @@
 | v4 | 订单与事务 | `git checkout v4` |
 | v5 | 数据关系、索引与库存并发 | `git checkout v5` |
 | v6 | Redis 缓存 | `git checkout v6` |
+| v7 | RabbitMQ 异步消息 | `git checkout v7` |
 
-当前阶段：v6。后续阶段见 [路线图](docs/roadmap.md)。
+当前阶段：v7。后续阶段见 [路线图](docs/roadmap.md)。
 
 ## 快速运行
 
-要求 JDK 21、Maven、Node.js、MySQL 8、Redis。先执行 `database/schema.sql`、`database/migrations/v5.sql` 和 `database/seed.sql`；已有 V4 数据库只执行一次 V5 迁移。按 [配置说明](docs/configuration.md) 设置数据库和 Redis 环境变量。分别在 `minimall-server` 执行 `mvn spring-boot:run`，在 `minimall-web` 执行 `npm ci && npm run dev`。访问 http://localhost:5173。Vite 会将 `/api` 代理到后端 8080。
+要求 JDK 21、Maven、Node.js、MySQL 8、Redis、RabbitMQ。新库依次执行 `database/schema.sql`、`database/migrations/v5.sql`、`database/migrations/v7.sql`、`database/seed.sql`；已有数据库只执行尚未运行的迁移。按 [配置说明](docs/configuration.md) 设置环境变量。分别在 `minimall-server` 执行 `mvn spring-boot:run`，在 `minimall-web` 执行 `npm ci && npm run dev`。访问 http://localhost:5173。Vite 会将 `/api` 代理到后端 8080。
 
 ## 验证
 
