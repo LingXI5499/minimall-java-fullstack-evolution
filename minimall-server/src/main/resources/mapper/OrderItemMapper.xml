@@ -16,13 +16,3 @@
     WHERE oi.order_id = #{orderId} ORDER BY oi.id
   </select>
 </mapper>
-
-
-
-
-
-
-
-
-
-

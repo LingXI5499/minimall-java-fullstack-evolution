@@ -1,5 +1,19 @@
 # Changelog
 
+## v6
+
+### Added
+- Redis 商品详情 Cache Aside、60 秒 TTL、20 秒空值缓存与命中/未命中/失效日志。
+
+### Changed
+- 商品写入后失效缓存；订单事务提交后再失效受影响商品缓存。
+
+### Fixed
+- Redis 不可用时回退 MySQL，缓存故障不阻断商品查询。
+
+### Learning Focus
+- Cache Aside、缓存穿透、TTL、失效时机与故障降级。
+
 ## v5
 
 ### Added

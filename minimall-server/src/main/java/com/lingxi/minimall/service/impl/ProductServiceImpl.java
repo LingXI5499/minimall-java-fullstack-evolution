@@ -7,6 +7,7 @@ import com.lingxi.minimall.entity.Product;
 import com.lingxi.minimall.mapper.ProductMapper;
 import com.lingxi.minimall.mapper.CategoryMapper;
 import com.lingxi.minimall.exception.BusinessException;
+import com.lingxi.minimall.cache.ProductCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -22,15 +23,17 @@ public class ProductServiceImpl implements ProductService {
     private static final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
     private final ProductMapper productMapper;
     private final CategoryMapper categoryMapper;
+    private final ProductCache cache;
 
-    public ProductServiceImpl(ProductMapper productMapper, CategoryMapper categoryMapper){
+    public ProductServiceImpl(ProductMapper productMapper, CategoryMapper categoryMapper, ProductCache cache){
         this.productMapper=productMapper;
         this.categoryMapper=categoryMapper;
+        this.cache=cache;
     }
 
     @Override
     public Product getById(Long id){
-        Product product = productMapper.selectById(id);
+        Product product = cache.find(id, () -> productMapper.selectById(id));
         if (product == null) throw new BusinessException(HttpStatus.NOT_FOUND, "商品不存在");
         return product;
     }
@@ -47,6 +50,7 @@ public class ProductServiceImpl implements ProductService {
         product.setCategoryId(productCreateDTO.getCategoryId());
 
         productMapper.insert(product);
+        cache.evict(product.getId());
         log.info("Created product id={}", product.getId());
 
         return product;
@@ -67,6 +71,7 @@ public class ProductServiceImpl implements ProductService {
         product.setCategoryId(productUpdateDTO.getCategoryId());
 
         if (productMapper.update(product) == 0) throw new BusinessException(HttpStatus.NOT_FOUND, "商品不存在");
+        cache.evict(id);
         log.info("Updated product id={}", id);
 
         return productMapper.selectById(id);
@@ -77,6 +82,7 @@ public class ProductServiceImpl implements ProductService {
 
         int rows = productMapper.deleteById(id);
         if (rows == 0) throw new BusinessException(HttpStatus.NOT_FOUND, "商品不存在");
+        cache.evict(id);
         log.info("Deleted product id={}", id);
         return rows;
     }

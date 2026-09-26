@@ -2,6 +2,7 @@ package com.lingxi.minimall.service.impl;
 
 import com.lingxi.minimall.dto.OrderCreateDTO;
 import com.lingxi.minimall.dto.OrderLineDTO;
+import com.lingxi.minimall.cache.ProductCache;
 import com.lingxi.minimall.entity.Order;
 import com.lingxi.minimall.entity.OrderItem;
 import com.lingxi.minimall.entity.Product;
@@ -22,6 +23,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * 订单创建的业务编排。Controller 只接收请求；这里负责查商品、算金额、写两张订单表和扣库存。
@@ -32,13 +35,15 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orders;
     private final OrderItemMapper items;
     private final ProductMapper products;
+    private final ProductCache cache;
     private final boolean rollbackEnabled;
 
-    public OrderServiceImpl(OrderMapper orders, OrderItemMapper items, ProductMapper products,
+    public OrderServiceImpl(OrderMapper orders, OrderItemMapper items, ProductMapper products, ProductCache cache,
                             @Value("${app.demo.rollback-enabled:false}") boolean rollbackEnabled) {
         this.orders = orders;
         this.items = items;
         this.products = products;
+        this.cache = cache;
         this.rollbackEnabled = rollbackEnabled;
     }
 
@@ -89,6 +94,11 @@ public class OrderServiceImpl implements OrderService {
                 throw new BusinessException(HttpStatus.CONFLICT, "库存不足或商品已下架");
             }
         }
+        // 提交成功后才删缓存；若事务回滚，旧库存仍然正确，不需要让读请求提前回填脏数据。
+        List<Long> changedProductIds = lines.stream().map(OrderItem::getProductId).toList();
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() { changedProductIds.forEach(cache::evict); }
+        });
         log.info("Created order id={} items={} total={}", order.getId(), lines.size(), total);
         return detail(order.getId());
     }
