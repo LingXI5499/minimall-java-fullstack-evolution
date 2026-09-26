@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+/** 新增商品的请求数据，只承接页面允许填写的字段。 */
 public class ProductCreateDTO {
     @NotBlank(message = "商品名称不能为空")
     private String name;

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
+/** 列表筛选和分页参数；offset 由 Service 根据页码计算，不直接接受前端指定。 */
 public class ProductQueryDTO {
 
     @Min(value = 1, message = "page 必须大于等于 1")

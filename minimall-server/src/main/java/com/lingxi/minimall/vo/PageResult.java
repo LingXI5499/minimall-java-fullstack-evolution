@@ -2,6 +2,7 @@ package com.lingxi.minimall.vo;
 
 import java.util.List;
 
+/** 分页返回值：总记录数与当前页 records 分开，供前端计算总页数。 */
 public class PageResult<T> {
 
     private long total;

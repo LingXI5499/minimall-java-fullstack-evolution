@@ -8,8 +8,9 @@
 | v1 | 商品 CRUD 与 MyBatis | `git checkout v1` |
 | v2 | 分页、模糊查询与动态 SQL | `git checkout v2` |
 | v3 | 统一响应、校验、异常与日志 | `git checkout v3` |
+| v4 | 订单与事务 | `git checkout v4` |
 
-当前阶段：v3。后续阶段见 [路线图](docs/roadmap.md)。
+当前阶段：v4。后续阶段见 [路线图](docs/roadmap.md)。
 
 ## 快速运行
 
@@ -17,4 +18,4 @@
 
 ## 验证
 
-`mvn test && mvn package`；`npm ci && npm run build`。页面可完成商品 CRUD、名称/状态/价格组合查询、翻页与每页条数切换。V0 Echo 接口仍可用于回顾请求链。
+`mvn test && mvn package`；`npm ci && npm run build`。`/products` 完成商品 CRUD、查询与分页，`/orders` 创建订单、查看列表和详情。V0 Echo 接口仍可用于回顾请求链。

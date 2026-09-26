@@ -16,6 +16,7 @@ const total = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(5)
 
+// 改变每页条数后从第一页重新查，避免旧页码在新总页数中不存在。
 function changePageSize() {
   currentPage.value = 1
   loadProducts()
@@ -67,6 +68,7 @@ async function loadProducts() {
 
   try {
 
+    // 空筛选值不传给后端，让 MyBatis 的 <if> 只处理真正填写的条件。
     const params = {
       page: currentPage.value,
       pageSize: pageSize.value
@@ -120,6 +122,7 @@ async function loadProducts() {
 
 function searchProducts() {
 
+  // 换筛选条件后原页码可能超出结果范围。
   currentPage.value = 1
 
   loadProducts()
@@ -260,6 +263,7 @@ async function saveProduct() {
   }
 
   const data = {
+    // 输入控件给出的价格和库存是字符串，发 JSON 前转成数值。
     name: form.name,
     price: Number(form.price),
     stock: Number(form.stock)

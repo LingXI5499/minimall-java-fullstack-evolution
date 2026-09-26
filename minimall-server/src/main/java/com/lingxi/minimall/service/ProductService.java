@@ -8,6 +8,7 @@ import com.lingxi.minimall.vo.PageResult;
 
 import java.util.List;
 
+/** 商品业务入口，隔开 HTTP 层与数据库访问层。 */
 public interface ProductService {
     Product getById(Long id);
 

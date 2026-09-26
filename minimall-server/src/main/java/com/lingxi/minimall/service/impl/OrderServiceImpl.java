@@ -1,0 +1,104 @@
+package com.lingxi.minimall.service.impl;
+
+import com.lingxi.minimall.dto.OrderCreateDTO;
+import com.lingxi.minimall.dto.OrderLineDTO;
+import com.lingxi.minimall.entity.Order;
+import com.lingxi.minimall.entity.OrderItem;
+import com.lingxi.minimall.entity.Product;
+import com.lingxi.minimall.exception.BusinessException;
+import com.lingxi.minimall.mapper.OrderItemMapper;
+import com.lingxi.minimall.mapper.OrderMapper;
+import com.lingxi.minimall.mapper.ProductMapper;
+import com.lingxi.minimall.service.OrderService;
+import com.lingxi.minimall.vo.OrderDetailVO;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * 订单创建的业务编排。Controller 只接收请求；这里负责查商品、算金额、写两张订单表和扣库存。
+ */
+@Service
+public class OrderServiceImpl implements OrderService {
+    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
+    private final OrderMapper orders;
+    private final OrderItemMapper items;
+    private final ProductMapper products;
+    private final boolean rollbackEnabled;
+
+    public OrderServiceImpl(OrderMapper orders, OrderItemMapper items, ProductMapper products,
+                            @Value("${app.demo.rollback-enabled:false}") boolean rollbackEnabled) {
+        this.orders = orders;
+        this.items = items;
+        this.products = products;
+        this.rollbackEnabled = rollbackEnabled;
+    }
+
+    /**
+     * 一个事务包住所有写操作。若后续任一步抛出运行时异常，Spring 会回滚已经执行的 SQL。
+     * 这个事务只覆盖数据库；未来接入 MQ 时必须等提交成功后再通知外部系统。
+     */
+    @Override
+    @Transactional
+    public OrderDetailVO create(OrderCreateDTO request) {
+        if (request.simulateFailure() && !rollbackEnabled) {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "回滚演示未启用");
+        }
+        Set<Long> seen = new HashSet<>();
+        List<OrderItem> lines = new ArrayList<>();
+        BigDecimal total = BigDecimal.ZERO;
+        for (OrderLineDTO line : request.items()) {
+            // 不接受同一商品重复出现，避免分两行检查库存时合计数量超过实际库存。
+            if (!seen.add(line.productId())) throw new BusinessException(HttpStatus.BAD_REQUEST, "订单中商品不能重复");
+            Product product = products.selectById(line.productId());
+            // 单价由数据库取得，不能信任浏览器提交的金额。
+            if (product == null) throw new BusinessException(HttpStatus.NOT_FOUND, "商品不存在");
+            if (!Integer.valueOf(1).equals(product.getStatus())) throw new BusinessException(HttpStatus.CONFLICT, "商品已下架");
+            if (product.getStock() < line.quantity()) throw new BusinessException(HttpStatus.CONFLICT, "库存不足");
+            OrderItem item = new OrderItem();
+            item.setProductId(product.getId());
+            item.setProductName(product.getName());
+            item.setUnitPrice(product.getPrice());
+            item.setQuantity(line.quantity());
+            item.setSubtotal(product.getPrice().multiply(BigDecimal.valueOf(line.quantity())));
+            lines.add(item);
+            total = total.add(item.getSubtotal());
+        }
+        Order order = new Order();
+        order.setTotalAmount(total);
+        order.setStatus("PENDING");
+        orders.insert(order);
+        // 先写订单头取得自增 ID，明细用这个 ID 建立关联。
+        for (OrderItem item : lines) {
+            item.setOrderId(order.getId());
+            items.insert(item);
+        }
+        // 教学开关只在显式启用时可用：此时订单与明细已写入，但异常会让两者一起回滚。
+        if (request.simulateFailure()) throw new IllegalStateException("教学回滚：明细已插入，库存扣减前抛异常");
+        for (OrderItem item : lines) {
+            products.decreaseStock(item.getProductId(), item.getQuantity());
+        }
+        log.info("Created order id={} items={} total={}", order.getId(), lines.size(), total);
+        return detail(order.getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Order> list() { return orders.selectAll(); }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDetailVO detail(Long id) {
+        Order order = orders.selectById(id);
+        if (order == null) throw new BusinessException(HttpStatus.NOT_FOUND, "订单不存在");
+        return new OrderDetailVO(order, items.selectByOrderId(id));
+    }
+}

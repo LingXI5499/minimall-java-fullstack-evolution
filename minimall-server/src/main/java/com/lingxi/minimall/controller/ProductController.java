@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/** 商品 HTTP 入口：接收 DTO、触发校验，再把 Service 的结果装入统一响应。 */
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {

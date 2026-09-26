@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+/** 修改商品的请求数据；商品 ID 由 URL 提供，不相信请求体中的 ID。 */
 public class ProductUpdateDTO {
 
     @NotBlank(message = "商品名称不能为空")

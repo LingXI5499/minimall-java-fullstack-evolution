@@ -24,6 +24,7 @@
 
     </select>
 
+    <!-- #{} 会作为 JDBC 预编译参数绑定，不要把页面输入直接拼进 SQL。 -->
     <insert id="insert"
             parameterType="com.lingxi.minimall.entity.Product"
             useGeneratedKeys="true"
@@ -79,6 +80,7 @@
 
     </select>
 
+    <!-- COUNT 与分页查询使用相同的 where 条件，否则总数和页面内容会对不上。 -->
     <select id="countByCondition"
             resultType="long">
 
@@ -107,6 +109,7 @@
 
     </select>
 
+    <!-- where/if 只拼接实际提供的筛选条件；ORDER BY 保证翻页顺序稳定。 -->
     <select id="selectPageByCondition"
             resultType="com.lingxi.minimall.entity.Product">
 
@@ -149,4 +152,8 @@
 
     </select>
 
+    <!-- V4 故意保留读后更新的并发问题；V5 会给 WHERE 增加库存条件。 -->
+    <update id="decreaseStock">
+        UPDATE product SET stock = stock - #{quantity} WHERE id = #{id}
+    </update>
 </mapper>

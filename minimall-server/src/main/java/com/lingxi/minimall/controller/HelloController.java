@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/** V0 保留的请求链演示：展示路径、查询参数和 JSON 请求体如何进入 Controller。 */
 @RestController
 @RequestMapping("/api")
 public class HelloController {

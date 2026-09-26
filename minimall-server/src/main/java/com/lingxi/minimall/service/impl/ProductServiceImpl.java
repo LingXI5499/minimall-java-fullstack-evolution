@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/** 商品业务实现：组装 Entity、调用 Mapper，并把“查无此商品”转为 404。 */
 @Service
 public class ProductServiceImpl implements ProductService {
     private static final Logger log = LoggerFactory.getLogger(ProductServiceImpl.class);
@@ -81,6 +82,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PageResult<Product> pageQuery(
             ProductQueryDTO queryDTO) {
+        // 价格区间的先后关系不是单字段注解能表达的，在业务层检查。
         if (queryDTO.getMinPrice() != null && queryDTO.getMaxPrice() != null
                 && queryDTO.getMinPrice().compareTo(queryDTO.getMaxPrice()) > 0) {
             throw new BusinessException(HttpStatus.BAD_REQUEST, "最低价格不能大于最高价格");
@@ -97,6 +99,7 @@ public class ProductServiceImpl implements ProductService {
             pageSize = 5;
         }
 
+        // SQL OFFSET 从 0 开始；第一页跳过 0 条，第二页跳过 pageSize 条。
         int offset =
                 (page - 1) * pageSize;
 

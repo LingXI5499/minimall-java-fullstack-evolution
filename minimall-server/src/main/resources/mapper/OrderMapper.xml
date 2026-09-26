@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lingxi.minimall.mapper.OrderMapper">
+  <!-- 自增主键回填到 Order.id，供同一事务后续写入 order_item。 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO orders (total_amount, status) VALUES (#{totalAmount}, #{status})
+  </insert>
+  <select id="selectById" resultType="com.lingxi.minimall.entity.Order">
+    SELECT id, total_amount, status, create_time, update_time FROM orders WHERE id = #{id}
+  </select>
+  <select id="selectAll" resultType="com.lingxi.minimall.entity.Order">
+    SELECT id, total_amount, status, create_time, update_time FROM orders ORDER BY id DESC LIMIT 100
+  </select>
+</mapper>

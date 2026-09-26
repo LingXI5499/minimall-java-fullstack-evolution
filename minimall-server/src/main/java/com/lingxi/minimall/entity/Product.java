@@ -3,6 +3,7 @@ package com.lingxi.minimall.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+/** product 表对应的持久化对象，与只含可编辑字段的 DTO 分开。 */
 public class Product {
 
     private Long id;

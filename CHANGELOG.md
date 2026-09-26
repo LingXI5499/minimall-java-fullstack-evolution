@@ -1,5 +1,19 @@
 # Changelog
 
+## v4
+
+### Added
+- `orders`、`order_item`，订单创建、列表和详情，多 Mapper 事务与回滚演示开关。
+
+### Changed
+- 前端加入 Vue Router，拆为商品与订单页面。
+
+### Fixed
+- 订单任一步失败时回滚订单、明细和库存更新。
+
+### Learning Focus
+- Service 编排、`@Transactional`、提交与回滚。
+
 ## v3
 
 ### Added
